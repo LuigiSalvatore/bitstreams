@@ -1,0 +1,91 @@
+module clocks #(parameter BASE_CLOCK = 100_000_000) (
+    input logic clk,
+    input logic reset,
+
+    output logic clock_cs,
+    output logic clock_s,
+    output logic clock_m,
+    output logic clock_h
+);
+
+    localparam bits_half_sec = $clog2(BASE_CLOCK/2);
+    localparam bits_half_cs  = $clog2(BASE_CLOCK/200);
+    logic [bits_half_sec-1:0] sec_reg;
+    logic [bits_half_cs-1:0]  cs_reg;
+    logic [6:0]               min_reg;
+    logic [7:0]               hour_reg;
+    logic                     clk_cs;
+    logic                     clk_s;
+    logic                     clk_m;
+    logic                     clk_h;
+
+
+    always_comb begin 
+        clock_cs = clk_cs;
+        clock_s  = clk_s;
+        clock_m  = clk_m;
+        clock_h  = clk_h;
+    end
+
+
+    always_ff@(posedge clk) begin
+        if (reset) begin
+            sec_reg <= '1;
+            cs_reg  <= '1;
+            clk_cs  <= '1;
+            clk_s   <= '1;
+        end else begin
+            if(sec_reg == (BASE_CLOCK/2)) begin
+                clk_s   <= ~clk_s;
+                sec_reg <= '0;
+            end else begin
+                sec_reg <= sec_reg + 1;
+            end
+            if(cs_reg == (BASE_CLOCK/200)) begin
+                clk_cs <= ~clk_cs;
+                cs_reg <= '0;
+            end else begin
+                cs_reg <= cs_reg + 1;
+            end
+        end
+    end
+    logic [31:0] medidor;
+    always_ff@(posedge clk_cs or posedge reset) begin 
+        if(reset) begin
+            medidor <= '0;
+        end else begin
+            medidor <= medidor + 1'b1;
+        end
+    end
+
+    always_ff@(posedge clk_s or posedge reset) begin
+        if (reset) begin
+            min_reg <= '0;
+            clk_m   <= '0;
+        end else begin
+            if(min_reg == 29) begin
+                min_reg <= '0;
+                clk_m   <= ~clk_m;
+            end else begin
+                min_reg <= min_reg + 1;
+            end
+        end
+    end
+        
+    always_ff@(posedge clk_m or posedge reset) begin
+        if (reset) begin
+            hour_reg <= '0;
+            clk_h    <= '0;
+        end else begin
+            if(hour_reg == 30) begin
+                hour_reg <= '0;
+                clk_h    <= ~clk_h;                
+            end else begin
+                hour_reg <= hour_reg + 1;
+            end
+        end
+    end
+
+
+
+endmodule
