@@ -160,22 +160,22 @@ always_ff@(posedge clock_cs or posedge reset) begin
     else begin
        
         if(enable_counting) begin
-            if(elapsed_cs == 'd99) begin
+            if(elapsed_cs == 'd100) begin
                 elapsed_cs <= 0;
                 elapsed_s <= elapsed_s + 1;
             end
             else begin
                 elapsed_cs <= elapsed_cs + 1'b1;
             end
-            if(elapsed_s == 'd59) begin
+            if(elapsed_s == 'd60) begin
                 elapsed_m <= elapsed_m + 1;
                 elapsed_s <= 0;
             end
-            if(elapsed_m == 'd59) begin
+            if(elapsed_m == 'd60) begin
                 elapsed_h <= elapsed_h + 1;
                 elapsed_m <= 0;
             end
-            if(elapsed_h == 'd99) begin
+            if(elapsed_h == 'd100) begin
                 elapsed_h <= 0;
             end
         end
